@@ -1,0 +1,60 @@
+server:
+  port: ${SERVER_PORT:8084}
+
+spring:
+  application:
+    name: notificacao-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/notificacao_db}
+    username: ${DB_USERNAME:cinepass}
+    password: ${DB_PASSWORD:cinepass}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      # Grupo próprio: cada serviço recebe todos os eventos do tópico, independente dos outros.
+      group-id: notificacao-service
+      auto-offset-reset: earliest
+    listener:
+      # Uma thread por partição (o tópico tem 3). Reservas diferentes em paralelo; eventos
+      # da mesma reserva, que têm a mesma chave e portanto a mesma partição, em sequência.
+      concurrency: 3
+      # O offset é confirmado registro a registro, depois do commit no banco.
+      ack-mode: record
+      # Abre o span do consumo a partir do traceparent que chegou no cabeçalho.
+      observation-enabled: true
+    template:
+      # Usado pelo envio à DLT, que também fica rastreado.
+      observation-enabled: true
+
+cinepass:
+  mensageria:
+    consumidor:
+      nome: notificacao
+      tentativas: 3
+      espera-inicial-ms: 1000
+  logging:
+    logstash:
+      destino: ${LOGSTASH_DESTINO:localhost:5000}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  tracing:
+    sampling:
+      probability: 1.0
+    export:
+      zipkin:
+        endpoint: ${ZIPKIN_ENDPOINT:http://localhost:9411/api/v2/spans}

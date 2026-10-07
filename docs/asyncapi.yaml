@@ -1,0 +1,363 @@
+asyncapi: 3.1.0
+info:
+  title: CinePass · eventos do ciclo de vida da reserva
+  version: 1.0.0
+  description: |
+    Contrato de comunicação assíncrona entre os microsserviços do CinePass. O reserva-service
+    publica os fatos do ciclo de vida da reserva; notificação, reputação e auditoria os consomem,
+    cada um em seu grupo. A versão comentada, com os exemplos reais, está em docs/EVENTOS.md.
+
+    Publicação por Transactional Outbox (pelo menos uma vez); consumo idempotente pelo eventId.
+    Ordem garantida por reserva (chave = reservaId); paralelismo entre reservas (3 partições).
+  contact:
+    name: André Luis Becker
+  license:
+    name: Uso acadêmico restrito (ver LICENSE)
+
+defaultContentType: application/json
+
+servers:
+  local:
+    host: localhost:9092
+    protocol: kafka
+    description: Kafka 4.3.1 em KRaft, exposto pelo docker-compose para quem roda na máquina.
+  docker:
+    host: kafka:29092
+    protocol: kafka
+    description: O mesmo broker, visto de dentro da rede do docker-compose.
+
+channels:
+  reservaEventos:
+    address: cinepass.reserva.eventos
+    title: Ciclo de vida da reserva
+    description: |
+      Um tópico para os quatro tipos de evento, com 3 partições e retenção de 7 dias. Um tópico só
+      é o que garante a ordem dos eventos de uma mesma reserva: mesma chave, mesma partição.
+    messages:
+      reservaCriada:
+        $ref: '#/components/messages/ReservaCriada'
+      pagamentoConfirmado:
+        $ref: '#/components/messages/PagamentoConfirmado'
+      reservaConfirmada:
+        $ref: '#/components/messages/ReservaConfirmada'
+      reservaCancelada:
+        $ref: '#/components/messages/ReservaCancelada'
+    bindings:
+      kafka:
+        partitions: 3
+        replicas: 1
+        topicConfiguration:
+          retention.ms: 604800000
+          cleanup.policy:
+            - delete
+        bindingVersion: 0.5.0
+
+  notificacaoDlt:
+    address: cinepass.reserva.eventos.notificacao.DLT
+    title: Mensagens que a notificação não conseguiu processar
+    description: Mesma partição de origem. Reprocessamento em POST /api/notificacoes/dlt/reprocessar.
+    messages:
+      eventoComFalha:
+        $ref: '#/components/messages/EventoComFalha'
+
+  reputacaoDlt:
+    address: cinepass.reserva.eventos.reputacao.DLT
+    title: Mensagens que a reputação não conseguiu processar
+    description: Reprocessamento em POST /api/reputacao/dlt/reprocessar.
+    messages:
+      eventoComFalha:
+        $ref: '#/components/messages/EventoComFalha'
+
+  auditoriaDlt:
+    address: cinepass.reserva.eventos.auditoria.DLT
+    title: Mensagens que a auditoria não conseguiu processar
+    description: Reprocessamento em POST /api/auditoria/dlt/reprocessar.
+    messages:
+      eventoComFalha:
+        $ref: '#/components/messages/EventoComFalha'
+
+operations:
+  publicarEventosDaReserva:
+    action: send
+    title: reserva-service publica (relay do outbox)
+    description: |
+      Cada passo da Saga grava o novo estado e o evento na mesma transação (tabela
+      outbox_mensagens). O relay publica em ordem de gravação, espera o ack de todas as réplicas
+      e só então marca a linha. Produtor idempotente.
+    channel:
+      $ref: '#/channels/reservaEventos'
+    bindings:
+      kafka:
+        clientId:
+          type: string
+          description: reserva-service
+        bindingVersion: 0.5.0
+
+  notificarCliente:
+    action: receive
+    title: notificacao-service consome
+    description: Registra uma notificação por evento (destinatário mascarado). Grupo notificacao-service, 3 threads.
+    channel:
+      $ref: '#/channels/reservaEventos'
+    bindings:
+      kafka:
+        groupId:
+          type: string
+          enum: [notificacao-service]
+        bindingVersion: 0.5.0
+
+  atualizarReputacao:
+    action: receive
+    title: reputacao-service consome
+    description: ReservaConfirmada e ReservaCancelada alteram a reputação do cliente; os demais são ignorados.
+    channel:
+      $ref: '#/channels/reservaEventos'
+    bindings:
+      kafka:
+        groupId:
+          type: string
+          enum: [reputacao-service]
+        bindingVersion: 0.5.0
+
+  auditarEvento:
+    action: receive
+    title: auditoria-service consome
+    description: Registra todo evento, com partição, offset e traceId de consumo.
+    channel:
+      $ref: '#/channels/reservaEventos'
+    bindings:
+      kafka:
+        groupId:
+          type: string
+          enum: [auditoria-service]
+        bindingVersion: 0.5.0
+
+components:
+  messages:
+    ReservaCriada:
+      name: ReservaCriada
+      title: Reserva criada
+      summary: Assentos bloqueados; a reserva aguarda pagamento.
+      headers:
+        $ref: '#/components/schemas/Cabecalhos'
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - type: object
+            properties:
+              eventType:
+                const: ReservaCriada
+              payload:
+                $ref: '#/components/schemas/ReservaCriadaV1'
+      bindings:
+        kafka:
+          key:
+            $ref: '#/components/schemas/ChaveReserva'
+          bindingVersion: 0.5.0
+      examples:
+        - name: caminhoFeliz
+          headers:
+            eventId: dc5621eb-5a51-4bb8-9cf3-7708b1298a2e
+            eventType: ReservaCriada
+            reservaId: e7ea6298-e21c-42c7-bedf-85acefa72808
+            correlationId: demo-at-0001
+            traceparent: 00-6ac027ede36e21a69e167ab3ba283c8e-9e167ab3ba283c8e-01
+          payload:
+            eventId: dc5621eb-5a51-4bb8-9cf3-7708b1298a2e
+            eventType: ReservaCriada
+            eventVersion: 1
+            reservaId: e7ea6298-e21c-42c7-bedf-85acefa72808
+            sequence: 1
+            occurredAt: '2026-10-02T21:53:49.459024590Z'
+            correlationId: demo-at-0001
+            producer: reserva-service
+            payload:
+              clienteId: 33333333-3333-3333-3333-333333333333
+              sessaoId: 22222222-2222-2222-2222-222222222222
+              assentos: [A1, A2]
+              valorTotal: 79.8
+
+    PagamentoConfirmado:
+      name: PagamentoConfirmado
+      title: Pagamento confirmado
+      summary: O pagamento da reserva foi aprovado; o ingresso é o próximo passo.
+      headers:
+        $ref: '#/components/schemas/Cabecalhos'
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - type: object
+            properties:
+              eventType:
+                const: PagamentoConfirmado
+              payload:
+                $ref: '#/components/schemas/PagamentoConfirmadoV1'
+      bindings:
+        kafka:
+          key:
+            $ref: '#/components/schemas/ChaveReserva'
+          bindingVersion: 0.5.0
+
+    ReservaConfirmada:
+      name: ReservaConfirmada
+      title: Reserva confirmada
+      summary: Pagamento aprovado e ingresso emitido.
+      headers:
+        $ref: '#/components/schemas/Cabecalhos'
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - type: object
+            properties:
+              eventType:
+                const: ReservaConfirmada
+              payload:
+                $ref: '#/components/schemas/ReservaConfirmadaV1'
+      bindings:
+        kafka:
+          key:
+            $ref: '#/components/schemas/ChaveReserva'
+          bindingVersion: 0.5.0
+
+    ReservaCancelada:
+      name: ReservaCancelada
+      title: Reserva cancelada
+      summary: Encerrada sem conclusão; assentos liberados e pagamento estornado quando havia.
+      headers:
+        $ref: '#/components/schemas/Cabecalhos'
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - type: object
+            properties:
+              eventType:
+                const: ReservaCancelada
+              payload:
+                $ref: '#/components/schemas/ReservaCanceladaV1'
+      bindings:
+        kafka:
+          key:
+            $ref: '#/components/schemas/ChaveReserva'
+          bindingVersion: 0.5.0
+
+    EventoComFalha:
+      name: EventoComFalha
+      title: Evento enviado à DLT
+      summary: O envelope original, intacto, com os cabeçalhos de diagnóstico do Spring Kafka.
+      headers:
+        allOf:
+          - $ref: '#/components/schemas/Cabecalhos'
+          - type: object
+            properties:
+              kafka_dlt-original-topic:
+                type: string
+              kafka_dlt-original-partition:
+                type: string
+              kafka_dlt-original-offset:
+                type: string
+              kafka_dlt-exception-fqcn:
+                type: string
+              kafka_dlt-exception-message:
+                type: string
+      payload:
+        $ref: '#/components/schemas/Envelope'
+
+  schemas:
+    ChaveReserva:
+      type: string
+      format: uuid
+      description: reservaId. Todos os eventos de uma reserva caem na mesma partição.
+
+    Cabecalhos:
+      type: object
+      required: [eventId, eventType, reservaId, correlationId]
+      properties:
+        eventId:
+          type: string
+          format: uuid
+        eventType:
+          type: string
+        reservaId:
+          type: string
+          format: uuid
+        correlationId:
+          type: string
+        traceparent:
+          type: string
+          description: W3C Trace Context, injetado pelo Micrometer Tracing no envio.
+
+    Envelope:
+      type: object
+      required: [eventId, eventType, eventVersion, reservaId, sequence, occurredAt, correlationId, producer, payload]
+      properties:
+        eventId:
+          type: string
+          format: uuid
+          description: Identificador único do evento; chave de idempotência dos consumidores.
+        eventType:
+          type: string
+          enum: [ReservaCriada, PagamentoConfirmado, ReservaConfirmada, ReservaCancelada]
+        eventVersion:
+          type: integer
+          minimum: 1
+        reservaId:
+          type: string
+          format: uuid
+        sequence:
+          type: integer
+          minimum: 1
+          description: Número do evento dentro da reserva.
+        occurredAt:
+          type: string
+          format: date-time
+        correlationId:
+          type: string
+          pattern: '^[A-Za-z0-9._-]{8,64}$'
+        producer:
+          type: string
+        payload:
+          type: object
+
+    ReservaCriadaV1:
+      type: object
+      required: [clienteId, sessaoId, assentos, valorTotal]
+      properties:
+        clienteId: { type: string, format: uuid }
+        sessaoId: { type: string, format: uuid }
+        assentos:
+          type: array
+          items: { type: string }
+        valorTotal: { type: number }
+
+    PagamentoConfirmadoV1:
+      type: object
+      required: [clienteId, pagamentoId, valor]
+      properties:
+        clienteId: { type: string, format: uuid }
+        pagamentoId: { type: string, format: uuid }
+        valor: { type: number }
+
+    ReservaConfirmadaV1:
+      type: object
+      required: [clienteId, sessaoId, assentos, valorTotal, pagamentoId, ingressoId]
+      properties:
+        clienteId: { type: string, format: uuid }
+        sessaoId: { type: string, format: uuid }
+        assentos:
+          type: array
+          items: { type: string }
+        valorTotal: { type: number }
+        pagamentoId: { type: string, format: uuid }
+        ingressoId: { type: string, format: uuid }
+
+    ReservaCanceladaV1:
+      type: object
+      required: [clienteId, motivo, valorTotal, pagamentoEstornado]
+      properties:
+        clienteId: { type: string, format: uuid }
+        motivo:
+          type: string
+          enum: [PAGAMENTO_RECUSADO, FALHA_COMUNICACAO_PAGAMENTO, FALHA_EMISSAO_INGRESSO]
+        valorTotal: { type: number }
+        pagamentoId: { type: [string, 'null'], format: uuid }
+        pagamentoEstornado: { type: boolean }

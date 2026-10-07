@@ -1,0 +1,11 @@
+meta {
+  name: Auditoria da reserva
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{baseUrl}}/api/auditoria/eventos?reservaId={{reservaId}}
+  body: none
+  auth: none
+}

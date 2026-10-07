@@ -1,0 +1,18 @@
+meta {
+  name: Cadastrar contato do cliente sem contato
+  type: http
+  seq: 13
+}
+
+put {
+  url: {{baseUrl}}/api/notificacoes/destinatarios/44444444-4444-4444-4444-444444444444
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "nome": "Ana Lima",
+    "email": "ana.lima@example.com"
+  }
+}

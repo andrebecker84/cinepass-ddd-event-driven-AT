@@ -1,0 +1,33 @@
+# Normaliza as quebras de linha no repositório, independente da configuração
+# de cada máquina: LF sempre no que é versionado, conversão local a cargo do Git.
+* text=auto eol=lf
+
+# Tipos de texto declarados explicitamente, para diff e merge corretos
+*.java    text eol=lf
+*.xml     text eol=lf
+*.yml     text eol=lf
+*.yaml    text eol=lf
+*.md      text eol=lf
+*.http    text eol=lf
+*.properties text eol=lf
+*.sql     text eol=lf
+.gitignore     text eol=lf
+.gitattributes text eol=lf
+LICENSE        text eol=lf
+
+# Scripts precisam do final de linha do seu interpretador
+*.sh      text eol=lf
+*.bat     text eol=crlf
+*.cmd     text eol=crlf
+
+# Binários: nunca converter, nunca tentar fazer diff textual
+*.docx    binary
+*.pdf     binary
+*.png     binary
+*.jpg     binary
+*.jpeg    binary
+*.gif     binary
+*.svg     text eol=lf
+*.jar     binary
+*.zip     binary
+*.ico     binary

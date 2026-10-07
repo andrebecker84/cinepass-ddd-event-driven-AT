@@ -1,0 +1,11 @@
+meta {
+  name: Eventos da reserva (outbox)
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/api/reservas/{{reservaId}}/eventos
+  body: none
+  auth: none
+}

@@ -1,0 +1,89 @@
+# ---------- build ----------
+target/
+build/
+out/
+bin/
+*.jar
+*.war
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/timing.properties
+
+# ---------- dependências e caches ----------
+node_modules/
+.pnpm-store/
+vendor/
+.gradle/
+.apt_generated/
+__pycache__/
+*.pyc
+
+# ---------- credenciais e segredos ----------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+*.truststore
+credentials.json
+secrets/
+application-local.yml
+application-local.yaml
+application-local.properties
+application-secrets.*
+
+# ---------- assistentes de IA ----------
+.claude/
+.cursor/
+.aider*
+.continue/
+
+# ---------- IDEs ----------
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.classpath
+.project
+.settings/
+.factorypath
+nbproject/
+.nb-gradle/
+*.swp
+*.bak
+*.tmp
+
+# ---------- sistema operacional e OneDrive ----------
+desktop.ini
+Thumbs.db
+ehthumbs.db
+.DS_Store
+$RECYCLE.BIN/
+
+# ---------- banco e logs ----------
+*.db
+*.mv.db
+*.trace.db
+logs/
+*.log
+
+# ---------- arquivos temporários do Office ----------
+~$*.docx
+~$*.xlsx
+~$*.pptx
+
+# ---------- entrega acadêmica ----------
+# O documento final e o molde ficam fora do Git, como no TP1, TP2 e TP3: o que se publica é
+# o código e o relatório em markdown. O PDF vai direto ao professor.
+/andre_becker_DR4_AT.docx
+/andre_becker_DR4_AT.pdf
+docs/molde/
+# Ferramentas de entrega (geram o .docx). O que se publica é o resultado; os diagramas estão em
+# docs/evidencias/, e o script que os gera (scripts/gerar-diagramas.py) continua versionado.
+scripts/gerar-documento.py
+scripts/revisao/
+# Ferramentas de captura das evidências (terminal do aluno e páginas), uso local.
+scripts/evidencias/

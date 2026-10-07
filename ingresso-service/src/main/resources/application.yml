@@ -1,0 +1,38 @@
+server:
+  port: ${SERVER_PORT:8083}
+
+spring:
+  application:
+    name: ingresso-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/ingresso_db}
+    username: ${DB_USERNAME:cinepass}
+    password: ${DB_PASSWORD:cinepass}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+
+cinepass:
+  logging:
+    logstash:
+      destino: ${LOGSTASH_DESTINO:localhost:5000}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  tracing:
+    sampling:
+      probability: 1.0
+    export:
+      zipkin:
+        endpoint: ${ZIPKIN_ENDPOINT:http://localhost:9411/api/v2/spans}

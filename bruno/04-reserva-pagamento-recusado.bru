@@ -1,0 +1,21 @@
+meta {
+  name: Reserva - Pagamento Recusado
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/reservas
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "clienteId": "33333333-3333-3333-3333-333333333333",
+    "sessaoId": "22222222-2222-2222-2222-222222222222",
+    "assentos": ["A2"],
+    "simularRecusaPagamento": true,
+    "simularFalhaIngresso": false
+  }
+}

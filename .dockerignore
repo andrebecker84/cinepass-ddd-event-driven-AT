@@ -1,0 +1,13 @@
+**/target/
+.git/
+.idea/
+.claude/
+docs/
+scripts/
+bruno/
+requests/
+infra/
+*.docx
+*.pdf
+*.md
+!README.md

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Configuração de log comum a todos os serviços. Cada serviço a inclui no próprio
+    logback-spring.xml com uma linha:
+
+        <include resource="cinepass-logback.xml"/>
+
+    Duas saídas, com o mesmo conteúdo:
+
+    1. Console, legível, com as chaves de contexto em colchetes.
+    2. Logstash (TCP, JSON por linha), que indexa no Elasticsearch para consulta no Kibana.
+       Desligado no perfil "test", para que os testes não tentem abrir conexão.
+
+    As chaves de contexto vêm do MDC e têm o mesmo nome em todos os serviços:
+    service, traceId, spanId, correlationId, reservaId, eventId, eventType.
+    São esses nomes que viram campos no Kibana.
+-->
+<included>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <springProperty scope="context" name="SERVICO" source="spring.application.name" defaultValue="cinepass"/>
+    <springProperty scope="context" name="LOGSTASH_DESTINO" source="cinepass.logging.logstash.destino" defaultValue="localhost:5000"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %highlight(%5p) [${SERVICO}] [trace=%X{traceId:-} span=%X{spanId:-}] [cid=%X{correlationId:-}] [reserva=%X{reservaId:-}] [evento=%X{eventId:-}] %cyan(%-40.40logger{39}) : %m%n%wEx</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <springProfile name="!test">
+        <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+            <destination>${LOGSTASH_DESTINO}</destination>
+            <!-- Se o Logstash cair, o serviço não para: reconecta e descarta o excedente do buffer. -->
+            <reconnectionDelay>5 seconds</reconnectionDelay>
+            <ringBufferSize>8192</ringBufferSize>
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <!-- Sem as propriedades de contexto do Logback (SERVICO, LOGSTASH_DESTINO): só o que interessa à consulta. -->
+                <includeContext>false</includeContext>
+                <customFields>{"service":"${SERVICO}","application":"cinepass"}</customFields>
+                <!--
+                    Defesa em profundidade contra dado sensível: mesmo que um log escreva um
+                    e-mail, um número de cartão ou um campo de senha por engano, o valor sai
+                    mascarado no JSON que vai para o Elasticsearch.
+                -->
+                <jsonGeneratorDecorator class="net.logstash.logback.mask.MaskingJsonGeneratorDecorator">
+                    <defaultMask>****</defaultMask>
+                    <path>senha</path>
+                    <path>password</path>
+                    <path>email</path>
+                    <path>cartao</path>
+                    <value>[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}</value>
+                    <value>\b\d{13,19}\b</value>
+                </jsonGeneratorDecorator>
+            </encoder>
+        </appender>
+    </springProfile>
+
+    <logger name="org.apache.kafka" level="WARN"/>
+    <logger name="org.hibernate.SQL" level="WARN"/>
+    <logger name="com.netflix.discovery" level="WARN"/>
+    <logger name="com.netflix.eureka" level="WARN"/>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <springProfile name="!test">
+            <appender-ref ref="LOGSTASH"/>
+        </springProfile>
+    </root>
+</included>

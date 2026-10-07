@@ -1,0 +1,4 @@
+br.com.cinepass.mensageria.correlacao.CorrelacaoAutoConfiguration
+br.com.cinepass.mensageria.observabilidade.ObservabilidadeAutoConfiguration
+br.com.cinepass.mensageria.outbox.OutboxAutoConfiguration
+br.com.cinepass.mensageria.inbox.InboxAutoConfiguration

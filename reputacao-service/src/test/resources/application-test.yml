@@ -1,0 +1,17 @@
+# Perfil dos testes de integração: PostgreSQL e Kafka vêm do Testcontainers (@ServiceConnection).
+eureka:
+  client:
+    enabled: false
+
+management:
+  tracing:
+    export:
+      # Não desligar o export geral: com ele desligado o Boot troca a propagação por
+      # nenhuma, e o traceparent some dos cabeçalhos. Só o envio ao Zipkin fica desligado.
+      zipkin:
+        enabled: false
+
+spring:
+  kafka:
+    consumer:
+      auto-offset-reset: earliest

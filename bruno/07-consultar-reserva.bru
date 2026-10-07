@@ -1,0 +1,15 @@
+meta {
+  name: Consultar Reserva
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/reservas/{{reservaId}}
+  body: none
+  auth: none
+}
+
+vars:pre-request {
+  reservaId: 00000000-0000-0000-0000-000000000000
+}

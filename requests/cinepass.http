@@ -1,0 +1,104 @@
+# Cenários do CinePass orientado a eventos. Tudo passa pelo API Gateway (:8080).
+# Abra no IntelliJ (HTTP Client) ou no VS Code (REST Client) com o docker compose de pé.
+#
+# O X-Correlation-Id é opcional: sem ele o Gateway gera um. Com ele, a operação fica fácil de
+# achar no Kibana (correlationId:"exemplo-0001"), na auditoria e no Zipkin (X-Trace-Id da resposta).
+
+@gateway = http://localhost:8080
+@cliente = 33333333-3333-3333-3333-333333333333
+@clienteSemContato = 44444444-4444-4444-4444-444444444444
+@sessao = 22222222-2222-2222-2222-222222222222
+
+### Catálogo
+GET {{gateway}}/api/sessoes
+
+### 1. Caminho feliz: ReservaCriada > PagamentoConfirmado > ReservaConfirmada
+POST {{gateway}}/api/reservas
+Content-Type: application/json
+X-Correlation-Id: exemplo-0001
+
+{
+  "clienteId": "{{cliente}}",
+  "sessaoId": "{{sessao}}",
+  "assentos": ["E1", "E2"],
+  "simularRecusaPagamento": false,
+  "simularFalhaIngresso": false
+}
+
+> {% client.global.set("reservaId", response.body.reservaId); %}
+
+### 2. Eventos gravados no outbox para a reserva (ordem, publicação, correlationId)
+GET {{gateway}}/api/reservas/{{reservaId}}/eventos
+
+> {% client.global.set("eventoConfirmado", response.body[2].eventId); %}
+
+### 3. Efeito nos consumidores: notificações (destinatário mascarado)
+GET {{gateway}}/api/notificacoes?reservaId={{reservaId}}
+
+### 4. Efeito nos consumidores: reputação e histórico do cliente
+GET {{gateway}}/api/reputacao/clientes/{{cliente}}
+
+### 5. Efeito nos consumidores: trilha de auditoria (sequence, partição, offset, traceId)
+GET {{gateway}}/api/auditoria/eventos?reservaId={{reservaId}}
+
+### 6. Auditoria por correlationId: tudo o que a operação externa gerou
+GET {{gateway}}/api/auditoria/eventos?correlationId=exemplo-0001
+
+### 7. Mensagem duplicada: o mesmo evento sai de novo, com o mesmo eventId.
+# Depois, repita 3, 4 e 5: nada muda. Os logs mostram "Evento duplicado ignorado".
+POST {{gateway}}/api/reservas/eventos/{{eventoConfirmado}}/republicar
+
+### 8. Pagamento recusado: ReservaCriada > ReservaCancelada (PAGAMENTO_RECUSADO). Responde 422.
+POST {{gateway}}/api/reservas
+Content-Type: application/json
+X-Correlation-Id: exemplo-recusa
+
+{
+  "clienteId": "{{cliente}}",
+  "sessaoId": "{{sessao}}",
+  "assentos": ["E3"],
+  "simularRecusaPagamento": true,
+  "simularFalhaIngresso": false
+}
+
+### 9. Compensação da Saga: ingresso falha, pagamento é estornado, reserva cancelada. Responde 422.
+POST {{gateway}}/api/reservas
+Content-Type: application/json
+X-Correlation-Id: exemplo-compensacao
+
+{
+  "clienteId": "{{cliente}}",
+  "sessaoId": "{{sessao}}",
+  "assentos": ["E4"],
+  "simularRecusaPagamento": false,
+  "simularFalhaIngresso": true
+}
+
+### 10. Falha de consumo: cliente sem contato. A reserva confirma; a notificação falha 3 vezes
+# e as mensagens vão para cinepass.reserva.eventos.notificacao.DLT. Auditoria e reputação seguem.
+POST {{gateway}}/api/reservas
+Content-Type: application/json
+X-Correlation-Id: exemplo-dlt
+
+{
+  "clienteId": "{{clienteSemContato}}",
+  "sessaoId": "{{sessao}}",
+  "assentos": ["E5"],
+  "simularRecusaPagamento": false,
+  "simularFalhaIngresso": false
+}
+
+### 11. Corrige a causa: cadastra o contato do cliente
+PUT {{gateway}}/api/notificacoes/destinatarios/{{clienteSemContato}}
+Content-Type: application/json
+
+{ "nome": "Ana Lima", "email": "ana.lima@example.com" }
+
+### 12. Reprocessa a DLT da notificação (mesmo caminho idempotente)
+POST {{gateway}}/api/notificacoes/dlt/reprocessar
+
+### 13. As DLTs da reputação e da auditoria também podem ser reprocessadas
+POST {{gateway}}/api/reputacao/dlt/reprocessar
+
+###
+POST {{gateway}}/api/auditoria/dlt/reprocessar

@@ -1,0 +1,68 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: api-gateway
+  reactor:
+    # Restaura o MDC (traceId, spanId) nas threads do Reactor, para os logs do Gateway
+    # saírem com o mesmo traceId que segue para os serviços.
+    context-propagation: auto
+  cloud:
+    loadbalancer:
+      cache:
+        ttl: 5s
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: reserva-service
+              uri: lb://RESERVA-SERVICE
+              predicates:
+                - Path=/api/reservas/**,/api/filmes/**,/api/sessoes/**
+            - id: pagamento-service
+              uri: lb://PAGAMENTO-SERVICE
+              predicates:
+                - Path=/api/pagamentos/**
+            - id: ingresso-service
+              uri: lb://INGRESSO-SERVICE
+              predicates:
+                - Path=/api/ingressos/**
+            - id: notificacao-service
+              uri: lb://NOTIFICACAO-SERVICE
+              predicates:
+                - Path=/api/notificacoes/**
+            - id: reputacao-service
+              uri: lb://REPUTACAO-SERVICE
+              predicates:
+                - Path=/api/reputacao/**
+            - id: auditoria-service
+              uri: lb://AUDITORIA-SERVICE
+              predicates:
+                - Path=/api/auditoria/**
+
+cinepass:
+  logging:
+    logstash:
+      destino: ${LOGSTASH_DESTINO:localhost:5000}
+
+eureka:
+  client:
+    # Em desenvolvimento, descobrir instâncias novas em segundos, e não em até um minuto.
+    registry-fetch-interval-seconds: 5
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  tracing:
+    sampling:
+      probability: 1.0
+    export:
+      zipkin:
+        endpoint: ${ZIPKIN_ENDPOINT:http://localhost:9411/api/v2/spans}

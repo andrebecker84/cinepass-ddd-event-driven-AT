@@ -1,0 +1,110 @@
+LICENÇA DE CÓDIGO VISÍVEL · USO ACADÊMICO RESTRITO
+Source-Available License · Restricted Academic Use
+
+Copyright (c) 2026 André Luis Becker. Todos os direitos reservados.
+
+--------------------------------------------------------------------------
+1. OBJETO
+--------------------------------------------------------------------------
+
+Este repositório contém trabalho acadêmico desenvolvido individualmente para
+a disciplina "Domain-Driven Design (DDD) e Arquitetura de Softwares
+Escaláveis com Java", do Bloco Engenharia de Softwares Escaláveis do
+Instituto Infnet (DR4-AT, 2026).
+
+O código-fonte é publicado com visibilidade pública para fins de avaliação
+acadêmica, revisão por pares e demonstração de portfólio profissional.
+Publicidade não implica cessão de direitos.
+
+--------------------------------------------------------------------------
+2. TRABALHO DERIVADO E ATRIBUIÇÃO DE ORIGEM
+--------------------------------------------------------------------------
+
+Parte deste repositório deriva do projeto didático "cinepass", de autoria
+de Leonardo Silva da Gloria, disponível em
+https://github.com/leoinfnet/cinepass e utilizado como base do exercício
+por orientação docente: os serviços reserva, pagamento e ingresso, o
+Eureka Server e o API Gateway, com seus modelos de domínio.
+
+O projeto de origem não declara licença; os direitos sobre o código original
+permanecem integralmente com o seu autor. Esta licença NÃO concede, e não
+tem como conceder, qualquer direito sobre aquele material. As disposições
+abaixo alcançam exclusivamente as contribuições originais do titular do
+copyright indicado acima, ou seja: a biblioteca cinepass-mensageria, os
+serviços de notificação, reputação e auditoria, a Saga com outbox, a
+infraestrutura de observabilidade, os testes e a documentação.
+
+--------------------------------------------------------------------------
+3. PERMISSÕES CONCEDIDAS
+--------------------------------------------------------------------------
+
+É concedida permissão, sem custo e sem necessidade de autorização prévia,
+para:
+
+  a) visualizar, ler e estudar o código-fonte e a documentação;
+  b) clonar o repositório para leitura e execução local;
+  c) citar trechos em contexto acadêmico ou técnico, desde que com
+     atribuição explícita ao autor e indicação da origem;
+  d) reutilizar ideias, padrões e técnicas aqui demonstrados, que são de
+     domínio público da engenharia de software.
+
+--------------------------------------------------------------------------
+4. RESTRIÇÕES
+--------------------------------------------------------------------------
+
+É expressamente VEDADO, sem autorização prévia e por escrito do autor:
+
+  a) APRESENTAR ESTE TRABALHO, NO TODO OU EM PARTE, COMO PRODUÇÃO PRÓPRIA
+     em qualquer avaliação, disciplina, curso, processo seletivo ou
+     certificação. Esta é a restrição central desta licença;
+  b) redistribuir, republicar ou espelhar o conteúdo, com ou sem
+     modificações, em outro repositório ou plataforma;
+  c) utilizar o conteúdo para fins comerciais;
+  d) remover ou alterar avisos de autoria, copyright ou esta licença.
+
+A conduta descrita no item (a) configura plágio acadêmico e sujeita o
+infrator às sanções previstas no regimento de sua instituição de ensino,
+além das medidas cíveis cabíveis.
+
+--------------------------------------------------------------------------
+5. BASE LEGAL
+--------------------------------------------------------------------------
+
+Os direitos autorais sobre programas de computador são regidos, no Brasil,
+pela Lei nº 9.610/1998 (Direitos Autorais) e pela Lei nº 9.609/1998
+(Proteção da Propriedade Intelectual de Programa de Computador). A proteção
+independe de registro. Nenhum direito não expressamente concedido nesta
+licença é transferido.
+
+--------------------------------------------------------------------------
+6. AUSÊNCIA DE GARANTIA
+--------------------------------------------------------------------------
+
+O SOFTWARE É FORNECIDO "COMO ESTÁ", SEM GARANTIA DE QUALQUER NATUREZA,
+EXPRESSA OU IMPLÍCITA, INCLUINDO MAS NÃO SE LIMITANDO ÀS GARANTIAS DE
+COMERCIABILIDADE, ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA E NÃO VIOLAÇÃO. EM
+NENHUMA HIPÓTESE O AUTOR SERÁ RESPONSÁVEL POR QUALQUER RECLAMAÇÃO, DANO OU
+OUTRA RESPONSABILIDADE DECORRENTE DE, OU RELACIONADA A, ESTE SOFTWARE OU AO
+SEU USO.
+
+Trata-se de projeto didático: pagamento e emissão de ingresso são simulados,
+os contatos de clientes são fictícios e o ambiente Docker Compose desliga a
+segurança do Elasticsearch. O código NÃO se destina a uso em produção.
+
+--------------------------------------------------------------------------
+7. CONTATO
+--------------------------------------------------------------------------
+
+Pedidos de autorização para usos não previstos nesta licença devem ser
+dirigidos ao autor pelo perfil https://github.com/andrebecker84.
+
+--------------------------------------------------------------------------
+
+SUMMARY (English)
+
+Source-available, all rights reserved. You may read, run and learn from this
+code, and cite it with attribution. You may NOT submit it as your own
+academic work, redistribute it, or use it commercially. Portions derive from
+an unlicensed teaching project by Leonardo Silva da Gloria
+(github.com/leoinfnet/cinepass); no rights to that original material are
+granted here.

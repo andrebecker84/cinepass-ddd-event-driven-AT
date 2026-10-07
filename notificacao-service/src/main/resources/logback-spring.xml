@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Console e Logstash, com as chaves de contexto comuns a todos os serviços. -->
+    <include resource="cinepass-logback.xml"/>
+</configuration>

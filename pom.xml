@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>4.1.1</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>br.com.cinepass</groupId>
+    <artifactId>cinepass</artifactId>
+    <version>2.0.0</version>
+    <packaging>pom</packaging>
+    <name>CinePass</name>
+    <description>CinePass orientado a eventos: Kafka, outbox, idempotência, logs centralizados e rastreamento distribuído</description>
+
+    <!--
+        Na base do professor o pom da raiz era apenas agregador e cada serviço
+        repetia parent, versões e BOMs. Aqui ele também é o pai: as versões ficam
+        num lugar só. Continua valendo a regra da base: nenhum serviço depende
+        de classe de domínio de outro. O único módulo compartilhado é técnico
+        (cinepass-mensageria) e não contém regra de negócio.
+    -->
+    <modules>
+        <module>cinepass-mensageria</module>
+        <module>discovery-server</module>
+        <module>api-gateway</module>
+        <module>reserva-service</module>
+        <module>pagamento-service</module>
+        <module>ingresso-service</module>
+        <module>notificacao-service</module>
+        <module>reputacao-service</module>
+        <module>auditoria-service</module>
+    </modules>
+
+    <properties>
+        <java.version>25</java.version>
+        <spring-cloud.version>2025.1.3</spring-cloud.version>
+        <testcontainers.version>2.0.5</testcontainers.version>
+        <logstash-logback-encoder.version>9.0</logstash-logback-encoder.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>br.com.cinepass</groupId>
+                <artifactId>cinepass-mensageria</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- O parent do Boot 4.1 não gerencia mais o Testcontainers. -->
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${testcontainers.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Encoder JSON para o Logstash. A linha 9 já usa Jackson 3, o mesmo do Boot 4. -->
+            <dependency>
+                <groupId>net.logstash.logback</groupId>
+                <artifactId>logstash-logback-encoder</artifactId>
+                <version>${logstash-logback-encoder.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <plugins>
+            <!--
+                A partir do Java 21 a JVM avisa quando um agente é carregado dinamicamente,
+                e o Mockito faz isso para criar mocks inline. A forma recomendada pelo próprio
+                Mockito é declará-lo como -javaagent: o plugin de dependências expõe o caminho
+                do jar numa propriedade, e o Surefire o passa à JVM dos testes.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>properties</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-javaagent:${org.mockito:mockito-core:jar} -Xshare:off</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
