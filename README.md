@@ -29,17 +29,27 @@
 
 <br/>
 
-[💡 Visão geral](#-vis%C3%A3o-geral) ·
-[🏗️ Arquitetura](#%EF%B8%8F-arquitetura) ·
-[🧱 Serviços](#-servi%C3%A7os-e-estrutura) ·
-[📨 Eventos](#-t%C3%B3picos-e-eventos) ·
-[🛡️ Confiabilidade](#%EF%B8%8F-confiabilidade) ·
-[🔭 Observabilidade](#-observabilidade) ·
-[▶️ Como rodar](#%EF%B8%8F-como-rodar) ·
-[📸 Evidências](#-evid%C3%AAncias) ·
-[📑 Relatório](docs/RELATORIO_AT.md)
+[![Relatório do AT](https://img.shields.io/badge/Relat%C3%B3rio_do_AT-13_itens_comentados-1E3A8A?style=for-the-badge&logo=markdown&logoColor=white)](docs/RELATORIO_AT.md)
+[![Evidências](https://img.shields.io/badge/Evid%C3%AAncias-19_capturas_da_execu%C3%A7%C3%A3o-DC2626?style=for-the-badge&logo=googlephotos&logoColor=white)](docs/RELATORIO_AT.md#13--evid%C3%AAncias-da-execu%C3%A7%C3%A3o)
 
 </div>
+
+---
+
+## 🧭 Índice
+
+| | Seção | O que você encontra |
+|:---:|---|---|
+| 💡 | [Visão geral](#-vis%C3%A3o-geral) | a base do professor, o que mudou e a tradução do enunciado |
+| 🏗️ | [Arquitetura](#%EF%B8%8F-arquitetura) | diagrama, a decisão central e a Saga no lugar do Temporal |
+| 🧱 | [Serviços e estrutura](#-servi%C3%A7os-e-estrutura) | os oito serviços, portas, bancos e pastas |
+| 📨 | [Tópicos e eventos](#-t%C3%B3picos-e-eventos) | tópicos, os quatro eventos e o ciclo de vida da reserva |
+| 🛡️ | [Confiabilidade](#%EF%B8%8F-confiabilidade) | outbox, ordem, idempotência, DLT e concorrência |
+| 🔭 | [Observabilidade](#-observabilidade) | correlationId, ELK, Zipkin e o caminho de uma operação |
+| ▶️ | [Como rodar](#%EF%B8%8F-como-rodar) | Docker Compose, painéis, testes e exemplos de chamadas |
+| 📸 | [Evidências](#-evid%C3%AAncias) | destaques e a lista das 19 capturas |
+| 📄 | [Documentação](#-documenta%C3%A7%C3%A3o) | relatório, especificação dos eventos, AsyncAPI, enunciado e rúbrica |
+| 📚 | [Stack](#-stack) | tecnologias e versões |
 
 ---
 

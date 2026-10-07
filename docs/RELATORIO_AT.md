@@ -12,7 +12,7 @@
 [![Evidências](https://img.shields.io/badge/evid%C3%AAncias-19-DC2626?style=for-the-badge)](#13--evid%C3%AAncias-da-execu%C3%A7%C3%A3o)
 [![Trace](https://img.shields.io/badge/Zipkin-27%20spans%20%C2%B7%207%20servi%C3%A7os-FE7139?style=for-the-badge)](#8--rastreamento-distribu%C3%ADdo)
 
-[⬅️ README](../README.md) · [📨 Especificação dos eventos](EVENTOS.md) · [📜 AsyncAPI](asyncapi.yaml) · [🎯 Enunciado](context/enunciado-DR4-AT.md) · [📋 Rúbrica](context/rubrica-DR4-AT.md)
+[⬅️ README](../README.md) · [📨 Eventos](EVENTOS.md) · [📜 AsyncAPI](asyncapi.yaml) · [🎯 Enunciado](context/enunciado-DR4-AT.md) · [📋 Rúbrica](context/rubrica-DR4-AT.md)
 
 </div>
 
