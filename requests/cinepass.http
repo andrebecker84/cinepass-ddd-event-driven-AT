@@ -3,6 +3,10 @@
 #
 # O X-Correlation-Id é opcional: sem ele o Gateway gera um. Com ele, a operação fica fácil de
 # achar no Kibana (correlationId:"exemplo-0001"), na auditoria e no Zipkin (X-Trace-Id da resposta).
+#
+# Os assentos (E1 a E5) e o cliente sem contato valem para o ambiente zerado (docker compose down -v).
+# Para repetir sem zerar, troque os assentos por outros livres (GET /api/sessoes). A coleção bruno/
+# escolhe o assento livre sozinha.
 
 @gateway = http://localhost:8080
 @cliente = 33333333-3333-3333-3333-333333333333

@@ -303,7 +303,8 @@ concorrência, DLT com reprocessamento e concorrência na mesma sessão.
 ### 🧪 Exemplos de chamadas
 
 [`requests/cinepass.http`](requests/cinepass.http) traz os cenários prontos para o IntelliJ ou o
-VS Code, e a coleção [`bruno/`](bruno) os mesmos para o Bruno. O essencial:
+VS Code, e a coleção [`bruno/`](bruno) os mesmos para o Bruno, que escolhe sozinha um assento livre e
+passa os ids de uma requisição para a seguinte. O essencial:
 
 ```bash
 curl -i -X POST http://localhost:8080/api/reservas \

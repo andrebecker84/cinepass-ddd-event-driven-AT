@@ -52,7 +52,8 @@ public class AuditoriaController {
 
     @PostMapping("/dlt/reprocessar")
     public ReprocessadorDeDlt.Resultado reprocessarDlt() {
-        // Na DLT não há metadado de origem confiável para a auditoria; registra a posição da própria DLT.
+        // O reprocessamento entrega só o envelope, sem a posição original no tópico: a origem fica
+        // registrada como "dlt", sem partição e offset (-1).
         return reprocessador.reprocessar(evento -> service.registrar(evento,
                 new AuditoriaApplicationService.Origem("dlt", -1, -1, null)));
     }

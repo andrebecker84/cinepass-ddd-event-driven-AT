@@ -9,3 +9,9 @@ get {
   body: none
   auth: none
 }
+
+script:post-response {
+  // O eventId do ReservaConfirmada é o que a requisição 09 publica de novo (duplicata deliberada).
+  const confirmada = (res.getBody() || []).find(e => e.eventType === 'ReservaConfirmada');
+  if (confirmada) bru.setVar('eventId', confirmada.eventId);
+}

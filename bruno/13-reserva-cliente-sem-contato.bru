@@ -1,7 +1,7 @@
 meta {
-  name: Reserva - Compensacao (falha no ingresso)
+  name: Reserva - Cliente sem contato (falha de consumo e DLT)
   type: http
-  seq: 5
+  seq: 13
 }
 
 post {
@@ -11,16 +11,16 @@ post {
 }
 
 headers {
-  X-Correlation-Id: bruno-compensacao
+  X-Correlation-Id: bruno-dlt
 }
 
 body:json {
   {
-    "clienteId": "33333333-3333-3333-3333-333333333333",
+    "clienteId": "44444444-4444-4444-4444-444444444444",
     "sessaoId": "22222222-2222-2222-2222-222222222222",
     "assentos": ["A1"],
     "simularRecusaPagamento": false,
-    "simularFalhaIngresso": true
+    "simularFalhaIngresso": false
   }
 }
 
@@ -34,8 +34,9 @@ script:pre-request {
   req.setBody(corpo);
 }
 
-script:post-response {
-  // A resposta 422 traz o pagamento estornado: a consulta 06 mostra o status ESTORNADO.
-  const corpo = res.getBody();
-  if (corpo && corpo.pagamentoId) bru.setVar('pagamentoId', corpo.pagamentoId);
+docs {
+  A reserva é confirmada, mas o notificacao-service não acha o contato do cliente: cada evento
+  falha 3 vezes e vai para cinepass.reserva.eventos.notificacao.DLT. Auditoria e reputação seguem
+  normalmente. Depois, 14 cadastra o contato e 15 reprocessa a DLT.
+  O cenário vale para o ambiente zerado (docker compose down -v): depois de cadastrado, o contato fica.
 }

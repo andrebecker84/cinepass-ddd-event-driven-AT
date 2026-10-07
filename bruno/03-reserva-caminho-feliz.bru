@@ -10,6 +10,10 @@ post {
   auth: none
 }
 
+headers {
+  X-Correlation-Id: bruno-0001
+}
+
 body:json {
   {
     "clienteId": "33333333-3333-3333-3333-333333333333",
@@ -18,4 +22,21 @@ body:json {
     "simularRecusaPagamento": false,
     "simularFalhaIngresso": false
   }
+}
+
+script:pre-request {
+  // Usa o primeiro assento livre da sessão: a coleção roda de novo sem zerar o ambiente.
+  const axios = require('axios');
+  const sessoes = (await axios.get(bru.getEnvVar('baseUrl') + '/api/sessoes')).data;
+  const sessao = sessoes.find(s => s.id === '22222222-2222-2222-2222-222222222222');
+  const corpo = req.getBody();
+  corpo.assentos = [sessao.assentosDisponiveis[0]];
+  req.setBody(corpo);
+}
+
+script:post-response {
+  // Guarda os ids para as consultas seguintes (eventos, notificações, auditoria, pagamento).
+  const corpo = res.getBody();
+  if (corpo && corpo.reservaId) bru.setVar('reservaId', corpo.reservaId);
+  if (corpo && corpo.pagamentoId) bru.setVar('pagamentoId', corpo.pagamentoId);
 }

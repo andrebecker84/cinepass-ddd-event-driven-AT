@@ -15,6 +15,10 @@
 
 name: cinepass
 
+# Todos os containers de longa duração usam restart: unless-stopped. Depois de reiniciar o
+# Docker ou a máquina, infraestrutura e serviços voltam juntos; se só os serviços voltassem,
+# ficariam reiniciando sem banco e sem Kafka.
+
 x-servico: &servico
   build: &build
     context: .
@@ -47,6 +51,7 @@ services:
   postgres:
     image: postgres:18-alpine
     container_name: cinepass-postgres
+    restart: unless-stopped
     environment:
       POSTGRES_USER: cinepass
       POSTGRES_PASSWORD: cinepass
@@ -66,6 +71,7 @@ services:
   kafka:
     image: apache/kafka:4.3.1
     container_name: cinepass-kafka
+    restart: unless-stopped
     ports:
       - "9092:9092"
     environment:
@@ -95,6 +101,7 @@ services:
   kafka-ui:
     image: kafbat/kafka-ui:v1.5.0
     container_name: cinepass-kafka-ui
+    restart: unless-stopped
     ports:
       - "8090:8080"
     environment:
@@ -109,12 +116,14 @@ services:
   zipkin:
     image: openzipkin/zipkin:3
     container_name: cinepass-zipkin
+    restart: unless-stopped
     ports:
       - "9411:9411"
 
   elasticsearch:
     image: elasticsearch:9.5.3
     container_name: cinepass-elasticsearch
+    restart: unless-stopped
     environment:
       discovery.type: single-node
       # Ambiente de desenvolvimento: sem TLS e sem usuário. Em produção, ligar a segurança.
@@ -133,6 +142,7 @@ services:
   logstash:
     image: logstash:9.5.3
     container_name: cinepass-logstash
+    restart: unless-stopped
     environment:
       LS_JAVA_OPTS: -Xms384m -Xmx384m
       xpack.monitoring.enabled: "false"
@@ -147,6 +157,7 @@ services:
   kibana:
     image: kibana:9.5.3
     container_name: cinepass-kibana
+    restart: unless-stopped
     environment:
       ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
       # Sem os avisos de telemetria e de cluster sem TLS, que cobrem a tela do Discover.
